@@ -160,7 +160,6 @@ class Network(object):
 
         if evaluation_data:
             evaluation_data = list(evaluation_data)
-            n_data = len(evaluation_data)
 
         # early stopping functionality:
         best_accuracy=0
@@ -184,17 +183,17 @@ class Network(object):
                 training_cost.append(cost)
                 print("Cost on training data: {}".format(cost))
             if monitor_training_accuracy:
-                accuracy = self.accuracy(training_data, convert=True)
+                accuracy, accuracy_per_neuron = self.accuracy(training_data, convert=True)
                 training_accuracy.append(accuracy)
-                print("Accuracy on training data: {} / {}".format(accuracy, n))
+                print("Accuracy on training data: \nTotal: {}% \nPer neuron: {}\n\n".format(accuracy, accuracy_per_neuron))
             if monitor_evaluation_cost:
                 cost = self.total_cost(evaluation_data, lmbda, convert=True)
                 evaluation_cost.append(cost)
                 print("Cost on evaluation data: {}".format(cost))
             if monitor_evaluation_accuracy:
-                accuracy = self.accuracy(evaluation_data)
+                accuracy, accuracy_per_neuron = self.accuracy(evaluation_data)
                 evaluation_accuracy.append(accuracy)
-                print("Accuracy on evaluation data: {} / {}".format(self.accuracy(evaluation_data), n_data))
+                print("Accuracy on evaluation data: \nTotal: {}% \nPer neuron: {}\n\n".format(accuracy, accuracy_per_neuron))
 
             # Early stopping:
             if early_stopping_n > 0:
@@ -293,25 +292,31 @@ class Network(object):
         else:
             results = [(np.argmax(self.feedforward(x)), y) for (x, y) in data]
 
+        n = len(data)
         total = {}
         success = {}
         result_accuracy = 0
+
         for (x, y) in results:
-            
+            if y not in total:
+                total[y] = 0
+                success[y] = 0
+
             total[y] += 1
             if x == y:
                 result_accuracy += 1
                 success[y] += 1
 
-        percentages = []
-        for key in total.keys:
-            percentages.append(success[key] / total[key])
-        # percentages = (x / y) * 100 for (x, y) in zip(success, total)
-
-        print(percentages)
+        accuracy_per_neuron = {}
+        for key in total.keys():
+            percentage = (success[key] / total[key]) * 100
+            accuracy_per_neuron[key] = round(percentage, 2)
 
         result_accuracy = sum(int(x == y) for (x, y) in results)
-        return (result_accuracy, )
+        result_accuracy = (result_accuracy / n) * 100
+        result_accuracy = round(result_accuracy, 2)
+
+        return (result_accuracy, accuracy_per_neuron)
 
     def total_cost(self, data, lmbda, convert=False):
         """Return the total cost for the data set ``data``.  The flag
