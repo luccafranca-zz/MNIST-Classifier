@@ -80,6 +80,8 @@ class Network(object):
         self.sizes = sizes
         self.default_weight_initializer()
         self.cost=cost
+        self.accuracies = []
+        self.accuracies_per_neuron = {}
 
     def default_weight_initializer(self):
         """Initialize each weight using a Gaussian distribution with mean 0
@@ -208,6 +210,8 @@ class Network(object):
                     #print("Early-stopping: No accuracy change in last epochs: {}".format(early_stopping_n))
                     return evaluation_cost, evaluation_accuracy, training_cost, training_accuracy
 
+        plot(self.accuracies, self.accuracies_per_neuron)
+
         return evaluation_cost, evaluation_accuracy, \
             training_cost, training_accuracy
 
@@ -312,9 +316,16 @@ class Network(object):
             percentage = (success[key] / total[key]) * 100
             accuracy_per_neuron[key] = round(percentage, 2)
 
+            if key not in self.accuracies_per_neuron:
+                self.accuracies_per_neuron[key] = []
+
+            self.accuracies_per_neuron[key].append(accuracy_per_neuron[key])
+
         result_accuracy = sum(int(x == y) for (x, y) in results)
         result_accuracy = (result_accuracy / n) * 100
         result_accuracy = round(result_accuracy, 2)
+
+        self.accuracies.append(result_accuracy)
 
         return (result_accuracy, accuracy_per_neuron)
 
@@ -376,3 +387,64 @@ def sigmoid(z):
 def sigmoid_prime(z):
     """Derivative of the sigmoid function."""
     return sigmoid(z)*(1-sigmoid(z))
+
+import matplotlib.pyplot as plt
+
+def plot(result_accuracies, accuracies_per_neuron):
+    x = []
+    y = []
+    epochs = 0
+
+    for accuracy in result_accuracies:
+        x.append(epochs)
+        y.append(accuracy)
+
+        epochs += 1
+    
+    # plotting the points  
+    plt.plot(x, y) 
+    # naming the x axis 
+    plt.xlabel('epochs') 
+    # naming the y axis 
+    plt.ylabel('accuracies') 
+    plt.savefig('result_accuracies.png')
+    
+    count = 0
+    while count < 10:
+        x = []
+        y = []
+
+        epochs = 0
+        for accuracy in accuracies_per_neuron[count]:
+            x.append(epochs)
+            y.append(accuracy)
+
+            epochs += 1
+
+        # plotting the points 
+        label = "Neuron " + str(count)
+        plt.plot(x, y, label = label)
+
+        epochs += 1
+        count += 1
+    # for cluster, accuracies in accuracies_per_neuron:
+    #     print(accuracies)
+    #     epochs = 0
+    #     for accuracy in accuracies:
+    #         x.append(epochs)
+    #         y.append(accuracy)
+    
+    #     # plotting the points  
+    #     plt.plot(x, y) 
+
+    #     epochs += 1
+
+    # naming the x axis 
+    plt.xlabel('epochs') 
+    # naming the y axis 
+    plt.ylabel('accuracies') 
+    plt.legend()
+    plt.savefig('accuracies_per_neuron.png')
+
+
+
