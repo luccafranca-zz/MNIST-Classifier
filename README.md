@@ -1,6 +1,6 @@
 # MNIST-Classifier
 
-Project for the Neural Networks chair, where we worked on parameter optimization of an MLP network developed by [Michael Nielsen](https://github.com/MichalDanielDobrzanski/DeepLearningPython35) based on the feedforward algorithm.
+Project for the Neural Networks course, where we worked on parameter optimization of an MLP network developed by [Michael Nielsen](https://github.com/MichalDanielDobrzanski/DeepLearningPython35) based on the feedforward algorithm.
 
 ## Authors
 
